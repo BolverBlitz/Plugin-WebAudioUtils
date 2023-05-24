@@ -4,12 +4,21 @@ const portAudio = require('naudiodon');
 const { verifyRequest } = require('@middleware/verifyRequest');
 const { limiter } = require('@middleware/limiter');
 const { timetable } = require('@lib/postgres');
+const fs = require('fs');
 const { InvalidRouteInput } = require('@lib/errors');
 const router = new HyperExpress.Router();
 
-let inAudio;
-let streamingType = 0; // 0 = none, 1 = BassAmplitude, 2 = AvrageFrequency, 3 = DominateFrequency, 4 = DominantNote, 5 = Analyzer
-let AnalyzrBins = 32; // Frequency bins for the analyzer
+let inAudio; // Global variable for the audio input stream
+let audio_config = {}; // Global variable for the audio config
+
+// Read the audio config file
+fs.readFile('./config/audio.json', 'utf8', (err, data) => {
+    if (err) {
+        process.log.error(err);
+        return;
+    }
+    audio_config = JSON.parse(data);
+});
 
 const targetFPS = 30;
 
